@@ -13,6 +13,7 @@
 int grid[HEIGHT][WIDTH];
 int currentX, currentY, currentPiece, rotation;
 int score = 0;
+int nextPiece;
 WINDOW *game, *info;
 
 // Define each piece in its base (0°) orientation with relative positions
@@ -49,7 +50,7 @@ void movePiece(int dx, int dy);
 void input();
 void logic();
 void drawScore();
-void drawPiece(int x, int y, int piece, int rotation);
+void drawPiece(WINDOW *win, int x, int y, int piece, int rotation);
 void rotateBlock(int *x, int *y, int rotation);
 int kbhit(void);
 
@@ -88,8 +89,9 @@ void init() {
     nodelay(stdscr, true);
 
     srand(time(NULL));
-    game = newwin(HEIGHT + 2, WIDTH + 2, 1, 1);
-    info = newwin(3, WIDTH + 2, HEIGHT + 3, 1);
+    game = newwin(HEIGHT + 2, WIDTH + 2, (LINES / 2) - ((HEIGHT + 2) / 2), (COLS / 2) - ((WIDTH + 2) / 2));
+    info = newwin(8, WIDTH + 2, (LINES / 2) - ((HEIGHT + 2) / 2), (COLS / 2) + ((WIDTH + 2) / 2));
+    nextPiece = rand() % 7;
     spawnPiece();
 }
 
@@ -99,33 +101,12 @@ void initGame() {
             grid[y][x] = EMPTY;
 }
 
-void shiftGridDown() {
-    // Shift every row down by one, starting from the bottom of the grid
-    for (int y = HEIGHT - 1; y > 0; y--) {
-        for (int x = 0; x < WIDTH; x++) {
-            grid[y][x] = grid[y - 1][x];
-        }
-    }
-
-    // Clear the top row
-    for (int x = 0; x < WIDTH; x++) {
-        grid[0][x] = EMPTY;
-    }
-}
-
-
 void spawnPiece() {
+    currentPiece = nextPiece;
+    nextPiece = rand() % 7;
     currentX = WIDTH / 2 - 1;  // Center the piece horizontally
     currentY = -1;  // Start slightly above the visible grid
-    currentPiece = rand() % 7;
     rotation = 0;
-
-    // Detect if we have an immediate collision at spawn
-    if (checkCollision(currentX, currentY, rotation)) {
-        shiftGridDown();
-        
-
-    }
 }
 
 int checkCollision(int x, int y, int rotation) {
@@ -227,13 +208,13 @@ void logic() {
     movePiece(0, 1);  // Move piece down automatically
 }
 
-void drawPiece(int x, int y, int piece, int rotation) {
+void drawPiece(WINDOW* win, int x, int y, int piece, int rotation) {
     for (int i = 0; i < 4; i++) {
         int blockX = pieces[piece].shape[i][0];
         int blockY = pieces[piece].shape[i][1];
         rotateBlock(&blockX, &blockY, rotation);
         if (y + blockY >= 0)
-            mvwaddch(game, y + blockY + 1, x + blockX + 1, BLOCK);
+            mvwaddch(win, y + blockY + 1, x + blockX + 1, BLOCK);
     }
 }
 
@@ -249,7 +230,7 @@ void draw() {
     }
 
     // Draw the current piece
-    drawPiece(currentX, currentY, currentPiece, rotation);
+    drawPiece(game, currentX, currentY, currentPiece, rotation);
 
     wrefresh(game);
     drawScore();
@@ -258,5 +239,7 @@ void draw() {
 void drawScore() {
     wclear(info);
     mvwprintw(info, 1, 1, "Score: %d", score);
+    mvwprintw(info, 3, 1, "Next:");
+    drawPiece(info, WIDTH / 2 - 4, 4, nextPiece, 0); 
     wrefresh(info);
 }
