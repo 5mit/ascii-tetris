@@ -1,17 +1,21 @@
 
 # **ascii-tetris**
 
-### A cli Tetris implementation using ncurses
+### A CLI version of Tetris implementated with ncurses
 
 ------------
 
 ## Compilation
 
-Simply type `make` in the project directory; make sure the host system has ncurses installed. (Most Linux environments do)
+Type `make` in the project directory; make sure the host system has ncurses installed. (Most Linux environments do)
+
+## How To Run
+
+Type `./tetris` in the project directory.
 
 ## Controls
 
 w: rotate piece\
 a: move piece left\
 s: move piece down\
-d: move piece right\ 
+d: move piece right
